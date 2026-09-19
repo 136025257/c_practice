@@ -5,19 +5,20 @@
 
 //定义学生结构体
 typedef struct{
-    int id; //学号
-    char name[20]; //姓名
-    float score[3]; //0=语文、1=数学、2=英语
+    int id;                          //学号
+    char name[20];                   //姓名
+    float score[3];                  //0=语文、1=数学、2=英语
 }student;
 
-int save_file(student *s,int count);//保存数据
-int load_file(student *s);//读取数据
+int save_file(student *s,int count); //保存数据
+int load_file(student *s);           //读取数据
 
 int main(void)
 {
-    int choice;
-    student s[max_student];
-    int count = load_file(s);
+    int choice;                      //定义选项
+    student s[max_student];          //定义结构体数组，存储学生信息
+    int count = 0;                   //初始化
+    count = load_file(s);            //加载学生信息，并传递出总信息数
     while(1)
     {
         printf("===== 学生成绩管理 =====\n");
@@ -28,7 +29,8 @@ int main(void)
         scanf("%d", &choice);
         switch (choice)
         {
-            case 1:{
+            case 1:
+            {
                 while (count < max_student)
                 {
                     printf("这是录入的第%d位同学\n",count + 1 );
@@ -54,20 +56,30 @@ int main(void)
                 }
                 save_file(s , count);
                 printf("输入完成！，共录入%d位。\n",count);
-                break;}
+                break;
+            }
 
-            case 2:{
+            case 2:
+            {
+                if (count == 0)
+                    {
+                        printf("还没有数据。\n");
+                        break;
+                    }
                 for(int i = 0 ;i < count; i++)
                     {
                         printf("第%d位同学：%s，学号：%d，语文成绩：%.1f，数学成绩：%.1f，英语成绩：%.1f\n",
                                 i + 1,s[i].name,s[i].id,
                                 s[i].score[0],s[i].score[1],s[i].score[2]);
                     }
-                break;}
+                break;
+            }
 
-            case 0:{
+            case 0:
+            {
                 printf("\n成功退出\n");
-                return 0;}
+                return 0;
+            }
 
             default:
                 // 上面case 1、0都没匹配上，就跑这里
@@ -77,21 +89,20 @@ int main(void)
     }
     return 0;
 }
-//录入
 
 //保存数据
 int save_file(student *s,int count)
     {
         FILE *fp = fopen("Student.bin","wb");//"wb":写 + 二进制，会清空原有内容
-        if (fp == NULL)
+        if (fp == NULL)                      //判空
         {
-            perror("保存失败");//perror 会顺带打印具体原因
+            perror("保存失败");               //perror 会顺带打印具体原因
             return -1;
         }
         //fwrite(地址(数据从哪开始),字符数(每个元素多大),写几个，文件指针)；
         //返回值：成功读写到的块数量
-        fwrite(&count, sizeof(int), 1, fp);//<count>头，文件里有多少条学生信息
-        fwrite(s,sizeof(student),count,fp);
+        fwrite(&count, sizeof(int), 1, fp); //<count>头，文件里有多少条学生信息
+        fwrite(s,sizeof(student),count,fp); //存储学生信息
         fclose(fp);
         return 0;
         
@@ -107,9 +118,10 @@ int load_file(student *s)
         }
         int count = 0;
         fread(&count,sizeof(int),1,fp);
-        printf("文件里有 %d 条记录\n", count);//会自动停在第 5 个字节
-        if (count > max_student) count = max_student;//越界保护，防止外部污染
-        fread(s,sizeof(student),count,fp);
-        fclose(fp);
+        printf("文件里有 %d 条记录\n", count);         //会自动停在第 5 个字节
+        if (count < 0) count = 0;                    //防错误
+        if (count > max_student) count = max_student;//越界保护
+        fread(s,sizeof(student),count,fp);           //继续读取学生信息
+        fclose(fp);                                  //释放文件
         return count;
     }
